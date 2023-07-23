@@ -12,7 +12,6 @@ concurrency:
 
 env:
   IMAGE_NAME: dylanowen/wasm-pack
-  GITHUB_TOKEN: ${{ secrets.PAT }} # Run our git interactions as a real user
 
 jobs:
   test:
@@ -23,6 +22,8 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.PAT }} # Run our git interactions as a real user
 
       - name: Docker meta Setup
         id: meta

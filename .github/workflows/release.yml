@@ -30,7 +30,7 @@ jobs:
           tags: ${{ env.IMAGE_TAG }}
       - name: Test
         run: |
-          docker -v test:/usr/src/test --workdir /usr/src/test ${{ env.IMAGE_TAG }} wasm-pack build
+          docker run -v test:/usr/src/test --workdir /usr/src/test ${{ env.IMAGE_TAG }} wasm-pack build
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:

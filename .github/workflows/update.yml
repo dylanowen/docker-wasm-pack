@@ -11,11 +11,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Install Latest Stable Rust
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           profile: minimal # we just need rustc to get the version
-      - name: Check Version
+
+      - name: Update Image
         run: |
-          rustc --version
+          ./updateImage.sh
+          echo "VERSION_TAG=$(head -1 Dockerfile | cut -d ':' -f 2)" >> $GITHUB_ENV
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: ${{ format('Update to Rust {0}', env.VERSION_TAG) }}
+          labels: |
+            auto update
+          delete-branch: true
+
+      - name: Enable Pull Request Automerge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        uses: peter-evans/enable-pull-request-automerge@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
+          merge-method: squash

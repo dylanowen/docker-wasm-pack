@@ -1,4 +1,4 @@
-FROM rust:1.66.0
+FROM rust:1.67.0
 
 # Since this is for building add all the components for the default profile
 RUN rustup component add rust-docs rustfmt clippy && \

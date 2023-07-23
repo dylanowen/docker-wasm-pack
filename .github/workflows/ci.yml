@@ -12,6 +12,7 @@ concurrency:
 
 env:
   IMAGE_NAME: dylanowen/wasm-pack
+  GITHUB_TOKEN: ${{ secrets.PAT }} # Run our git interactions as a real user
 
 jobs:
   test:

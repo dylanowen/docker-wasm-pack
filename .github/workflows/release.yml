@@ -1,4 +1,4 @@
-name: ci
+name: Release
 
 on:
   push:
@@ -19,7 +19,9 @@ jobs:
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_TAG }}
-          tags: {{tag}}
+          tags: |
+            # minimal
+            type=semver,pattern={{version}}
       - name: Build and export to Docker
         uses: docker/build-push-action@v4
         with:

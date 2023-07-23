@@ -28,7 +28,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_TAG }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             # minimal
             type=semver,pattern={{version}}
@@ -65,7 +65,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.IMAGE_TAG }}
+          images: ${{ env.IMAGE_NAME }}
           tags: |
             # minimal
             type=semver,pattern={{version}}

@@ -5,7 +5,7 @@ BASE_DIR=$(cd $(dirname $0); pwd)
 
 IMAGE_TAG=${1}
 
-TEST_SCRIPT=$(cat <<END
+TEST_SCRIPT=$(cat <<'EOF'
 # Clean for local testing
 cargo clean ;
 
@@ -20,7 +20,8 @@ echo "127.0.0.1   static.rust-lang.org" >> /etc/hosts ;
 # Build our test project
 wasm-pack build
 
-END)
+EOF
+)
 
 docker run \
   --rm \

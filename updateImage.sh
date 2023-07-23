@@ -10,7 +10,6 @@ sed "s/%%RUST_VERSION%%/${RUST_VERSION}/g" ${BASE_DIR}/Dockerfile.template > ${B
 
 if [[ `git status --porcelain` ]]; then
   git add -A &> /dev/null
-  git ci -m "Updating to Rust ${RUST_VERSION}" &> /dev/null
   echo "true"
 else
   echo "false"

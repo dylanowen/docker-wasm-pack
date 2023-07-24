@@ -49,6 +49,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        if: github.ref == 'refs/heads/main'
         with:
           fetch-depth: 0 # Make sure we get all our tags
           token: ${{ secrets.PAT }} # Run our git interactions as a real user

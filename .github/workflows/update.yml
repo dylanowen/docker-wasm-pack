@@ -28,7 +28,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }} # Trigger our PR as a real user
           title: ${{ format('Update to Rust {0}', env.VERSION_TAG) }}
           branch: ${{ format('auto-update-{0}', env.VERSION_TAG) }}
           labels: |

@@ -12,7 +12,7 @@ jobs:
   ensure_main:
     runs-on: ubuntu-latest
     outputs:
-      is_main: ${{ steps.is_main.outputs.run_jobs }}
+      is_main: ${{ steps.is_main.outputs.is_main }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -21,9 +21,9 @@ jobs:
         id: is_main
         run: |
           if git branch --contains tags/1.70.0 2>/dev/null | grep -q 'main' ; then
-            echo "::set-output name=run_jobs::true"
+            echo "is_main=true" >> $GITHUB_OUTPUT
           else
-            echo "::set-output name=run_jobs::false"
+            echo "is_main=false" >> $GITHUB_OUTPUT
           fi
 
   build_amd64:

@@ -24,9 +24,6 @@ jobs:
 
       - name: Checkout
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0 # Make sure we get all our tags
-          token: ${{ secrets.PAT }} # Run our git interactions as a real user
 
       - name: Docker meta Setup
         id: meta
@@ -44,6 +41,17 @@ jobs:
       - name: Test
         run: |
           ./testImage.sh ${{ env.IMAGE_NAME }}
+
+  tag_main:
+    name: Tag Main
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0 # Make sure we get all our tags
+          token: ${{ secrets.PAT }} # Run our git interactions as a real user
 
       - name: Tag Main
         if: github.ref == 'refs/heads/main'

@@ -1,4 +1,4 @@
-name: Update Image
+name: Auto Update
 
 on:
   schedule:

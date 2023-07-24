@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "*"
+  workflow_dispatch:
 
 env:
   IMAGE_NAME: dylanowen/wasm-pack
@@ -23,11 +24,13 @@ jobs:
       - name: Is Main
         id: is_main
         run: |
-          if git branch --contains tags/1.70.0 2>/dev/null | grep -q 'main' ; then
-            >&2 echo "Our tag IS on the main branch"
+          echo "Branches with our tag:"
+          git branch --contains tags/${{ github.ref_name }}
+          if git branch --contains tags/${{ github.ref_name }} 2>/dev/null | grep -q 'main' ; then
+            echo "Our tag IS on the main branch"
             echo "is_main=true" >> $GITHUB_OUTPUT
           else
-            >&2 echo "Our tag IS NOT the main branch"
+            echo "Our tag IS NOT the main branch"
             echo "is_main=false" >> $GITHUB_OUTPUT
           fi
 

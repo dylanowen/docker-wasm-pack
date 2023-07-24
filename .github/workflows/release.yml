@@ -24,7 +24,7 @@ jobs:
       - name: Is Main
         id: is_main
         run: |
-          echo "Tags on `main` (looking for ${{ github.ref_name }}):"
+          echo "Tags on main (looking for ${{ github.ref_name }}):"
           git tag --merged main
           if git tag --merged main 2>/dev/null | grep -q '${{ github.ref_name }}' ; then
             echo "Our tag IS on the main branch"

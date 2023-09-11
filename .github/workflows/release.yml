@@ -74,7 +74,7 @@ jobs:
     name: Build For Arm64
     runs-on: ubuntu-latest
     needs: ensure_main
-    if: false # TODO re-enable if: needs.check_main.outputs.is_main == 'true'
+    if: needs.ensure_main.outputs.is_main == 'true'
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2

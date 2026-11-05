@@ -1,5 +1,17 @@
 # Workflows
 
+## [Auto Update](./update.yml)
+
+Runs daily or manually. Moves the image to the next Rust release and opens a PR for it.
+
+1. Finds the next Rust release after our [`Dockerfile`](../../Dockerfile) version that has a `rust` Docker image.
+    1. See [updateImage.sh](../../updateImage.sh). Releases are taken one at a time, so if we fall behind every
+       skipped version still gets its own image.
+2. Opens a PR as a GitHub App and enables auto merge.
+    1. The PR is opened with an App token rather than `GITHUB_TOKEN` because events created by `GITHUB_TOKEN` don't
+       trigger other workflows, so CI wouldn't run on the PR or on the merge to `main`.
+    2. Requires the `APP_ID` variable and `APP_PRIVATE_KEY` secret.
+
 ## [Continuous Integration](./ci.yml)
 
 Runs for every PR and merge to `main`.
@@ -8,25 +20,7 @@ Runs for every PR and merge to `main`.
 2. Test by building the [test](../../test) project using `wasm-pack build`
     1. During this test we block internet access to various sites to ensure all the necessary binaries are in the docker
        image. See [testImage.sh](../../testImage.sh).
-3. If we're on the `main` branch AND our [`Dockerfile`](../../Dockerfile) has a later Rust version we create a new
-   version tag for this commit.
-    1. This happens as part of [createTag.sh](../../createTag.sh)
-    2. Because Github Actions can't trigger other actions we use a custom Personal Access Token here. If this step is
-       broken make sure the PAT hasn't expired.
-
-## [Release](./release.yml)
-
-Runs for every tag on the `main` branch. Tags on the `main` branch will trigger a deployment to Docker Hub.
-
-1. Check if we're actually on the `main` branch for a tag.
-2. Build and push our Docker image for each architecture.
-
-## [Auto Update](./update.yml)
-
-Runs daily or manually. This checks to see if there is a new Rust version and if so creates a PR for the new version.
-
-1. Sets up the latest stable Rust
-2. Attempts to update our image using the `rustc --version` output.
-   1. See [updateImage.sh](../../updateImage.sh)
-3. If there are any changes in our repo creates a new PR
-4. Sets up the PR for auto merging.
+3. On `main`, if the [`Dockerfile`](../../Dockerfile) Rust version has no tag yet:
+    1. Build and push the image for each architecture to Docker Hub.
+    2. Create a GitHub Release (and tag) for the version.
+    3. Trigger [Auto Update](#auto-update) to pick up the next version, if there is one.

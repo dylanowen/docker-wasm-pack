@@ -1,19 +1,26 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
-BASE_DIR=$(cd $(dirname $0); pwd)
+# Moves the Dockerfile to the next Rust release that has a published image, printing that version.
+# Stepping one release at a time means every version gets its own PR, tag and release.
 
-# If this stops working we could maybe use https://forge.rust-lang.org/infra/channel-layout.html
-RUST_VERSION=$(docker run --rm rust:latest rustc --version 2>/dev/null | cut -d ' ' -f 2)
->&2 echo "Latest Rust Docker Version: ${RUST_VERSION}"
+BASE_DIR=$(cd "$(dirname "$0")"; pwd)
+CURRENT=$(sed -nE '1s/^FROM rust:(.*)$/\1/p' "${BASE_DIR}/Dockerfile")
+>&2 echo "Current Rust Version: ${CURRENT}"
 
-sed "s/%%RUST_VERSION%%/${RUST_VERSION}/g" ${BASE_DIR}/Dockerfile.template > ${BASE_DIR}/Dockerfile
+newer_versions() {
+  { echo "${CURRENT}"; git ls-remote --tags --refs https://github.com/rust-lang/rust | sed -nE 's|.*refs/tags/([0-9]+\.[0-9]+\.[0-9]+)$|\1|p'; } \
+    | sort -uV \
+    | awk -v current="${CURRENT}" 'seen; $0 == current { seen = 1 }'
+}
 
-if [[ `git status --porcelain` ]]; then
-  git add -A &> /dev/null
-  >&2 echo "Updating to ${RUST_VERSION}"
-  echo "true"
-else
-  >&2 echo "No changes, ${RUST_VERSION} is the latest"
-  echo "false"
-fi
+for VERSION in $(newer_versions); do
+  if docker manifest inspect "rust:${VERSION}" > /dev/null 2>&1; then
+    sed "s/%%RUST_VERSION%%/${VERSION}/g" "${BASE_DIR}/Dockerfile.template" > "${BASE_DIR}/Dockerfile"
+    >&2 echo "Updating to ${VERSION}"
+    echo "${VERSION}"
+    exit 0
+  fi
+done
+
+>&2 echo "No newer Rust image than ${CURRENT}"

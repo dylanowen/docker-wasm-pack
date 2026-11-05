@@ -5,34 +5,48 @@ on:
     - cron: '0 2 * * *'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}
+
+permissions:
+  contents: read
+
 jobs:
   update:
     name: Auto Update
     runs-on: ubuntu-latest
     steps:
+      - name: Get App Token
+        id: app_token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Update Image
-        run: |
-          ./updateImage.sh
-          echo "VERSION_TAG=$(head -1 Dockerfile | cut -d ':' -f 2)" >> $GITHUB_ENV
+        id: update
+        run: echo "version=$(./updateImage.sh)" >> "$GITHUB_OUTPUT"
 
       - name: Create Pull Request
         id: cpr
-        uses: peter-evans/create-pull-request@v5
+        if: steps.update.outputs.version != ''
+        uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.PAT }} # Trigger our PR as a real user
-          title: ${{ format('Update to Rust {0}', env.VERSION_TAG) }}
-          branch: ${{ format('auto-update-{0}', env.VERSION_TAG) }}
-          labels: |
-            auto-update
+          token: ${{ steps.app_token.outputs.token }}
+          sign-commits: true
+          commit-message: Update to Rust ${{ steps.update.outputs.version }}
+          title: Update to Rust ${{ steps.update.outputs.version }}
+          branch: auto-update-${{ steps.update.outputs.version }}
+          labels: auto-update
           delete-branch: true
 
       - name: Enable Pull Request Automerge
         if: steps.cpr.outputs.pull-request-operation == 'created'
         uses: peter-evans/enable-pull-request-automerge@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.app_token.outputs.token }}
           pull-request-number: ${{ steps.cpr.outputs.pull-request-number }}
           merge-method: squash
